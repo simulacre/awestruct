@@ -3,6 +3,17 @@ module Awestruct
   module Extensions
     class Tagger
 
+      class << self
+        def page_accessor(attr = nil)
+          return (@page_accessor_attr || :tags) if attr.nil?
+          @page_accessor_attr = attr
+        end
+        def link_helper(klass = nil)
+          return (@link_helper || TagLinker) if klass.nil?
+          @link_helper = klass
+        end
+      end
+
       class TagStat
         attr_accessor :pages
         attr_accessor :group
@@ -35,10 +46,10 @@ module Awestruct
       def execute(site)
         @tags ||= {}
         all = site.send( @tagged_items_property )
-        return if ( all.nil? || all.empty? ) 
+        return if ( all.nil? || all.empty? )
 
         all.each do |page|
-          tags = page.tags
+          tags = page.send(self.class.page_accessor)
           if ( tags && ! tags.empty? )
             tags.each do |tag|
               tag = tag.to_s
@@ -49,8 +60,8 @@ module Awestruct
         end
 
         all.each do |page|
-          page.tags = (page.tags||[]).collect{|t| @tags[t]}
-          page.extend( TagLinker )
+          page.send("#{self.class.page_accessor}=", (page.send(self.class.page_accessor)||[]).collect{|t| @tags[t]})
+          page.extend( self.class.link_helper )
         end
 
         ordered_tags = @tags.values
@@ -67,7 +78,7 @@ module Awestruct
         end
 
         span = max - min
-        
+
         if span > 0
           slice = span / 6.0
           ordered_tags.each do |tag|
