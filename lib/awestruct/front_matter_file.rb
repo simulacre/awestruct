@@ -20,18 +20,25 @@ module Awestruct
 
       dash_lines = 0
       mode = :yaml
+      lnum = 1
 
       full_content.each_line do |line|
-        if ( line.strip == '---' )
-          dash_lines = dash_lines +1
-        end
-        if ( mode == :yaml )
-          yaml_content << line
-        else
-          @raw_page_content << line
-        end
-        if ( dash_lines == 2 )
-          mode = :page
+        begin
+          if ( line.strip == '---' )
+            dash_lines = dash_lines +1
+          end
+          if ( mode == :yaml )
+            yaml_content << line
+          else
+            @raw_page_content << line
+          end
+          if ( dash_lines == 2 )
+            mode = :page
+          end
+          lnum += 1
+        rescue Exception => e
+          e.set_backtrace(e.backtrace.unshift("#{source_path}:#{lnum}"))
+          raise e
         end
       end
 
@@ -42,7 +49,7 @@ module Awestruct
 
       begin
         @front_matter = YAML.load( yaml_content ) || {}
-        @front_matter.each do |k,v| 
+        @front_matter.each do |k,v|
           self.send( "#{k}=", v )
         end
       rescue => e
