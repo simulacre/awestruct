@@ -16,6 +16,7 @@ module Awestruct
 
     def load_page
       full_content = File.read( source_path )
+      full_content.force_encoding(@site.encoding) if @site.encoding
       yaml_content = ''
 
       dash_lines = 0
