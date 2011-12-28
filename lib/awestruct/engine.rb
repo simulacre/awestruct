@@ -420,7 +420,7 @@ module Awestruct
       ext_dir = File.join( config.extension_dir )
       pipeline_file = File.join( ext_dir, 'pipeline.rb' )
       if ( File.exists?( pipeline_file ) )
-        pipeline = eval(File.read( pipeline_file ), nil, pipeline_file, 0)
+        pipeline = eval(File.read( pipeline_file ), nil, pipeline_file, 1)
         @helpers = pipeline.helpers || []
         @transformers = pipeline.transformers || []
         watched_dirs << ext_dir.to_s
