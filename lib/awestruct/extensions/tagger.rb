@@ -93,7 +93,7 @@ module Awestruct
         end
 
         @tags.values.each do |tag|
-          paginator = Awestruct::Extensions::Paginator.new( @tagged_items_property, @input_path, { :remove_input=>false, :output_prefix=>File.join( @output_path, tag.to_s), :collection=>tag.pages }.merge( @pagination_opts ) )
+          paginator = Awestruct::Extensions::Paginator.new( @tagged_items_property, @input_path, { :remove_input=>false, :output_prefix=>File.join( @output_path, tag.to_s), :collection=>tag.pages, :front_matter => {:tag => tag} }.merge( @pagination_opts ) )
           primary_page = paginator.execute( site )
           tag.primary_page = primary_page
         end

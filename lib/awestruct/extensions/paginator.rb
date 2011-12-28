@@ -52,7 +52,8 @@ module Awestruct
         @window_size  = opts[:window_size] || 2
         @remove_input = opts.has_key?( :remove_input ) ? opts[:remove_input] : true
         @output_prefix = opts[:output_prefix] || File.dirname( @input_path )
-        @collection    = opts[:collection] 
+        @collection    = opts[:collection]
+        @front_matter  = opts[:front_matter] || {}
       end
 
       def execute(site)
@@ -65,6 +66,7 @@ module Awestruct
           removal_path ||= page.output_path
           slice.extend( Paginated )
           page.send( "#{@prop_name}=", slice )
+          @front_matter.each { |k,v| page.send("#{k}=", v) }
           if ( i == 1 )
             page.output_path = File.join( @output_prefix, File.basename( @input_path ) + ".html" )
           else
@@ -74,7 +76,7 @@ module Awestruct
           site.pages << page
           paginated_pages << page
           i = i + 1
-        end 
+        end
 
         if ( @remove_input )
           site.pages.reject!{|page|
