@@ -3,17 +3,6 @@ module Awestruct
   module Extensions
     class Tagger
 
-      class << self
-        def page_accessor(attr = nil)
-          return (@page_accessor_attr || :tags) if attr.nil?
-          @page_accessor_attr = attr
-        end
-        def link_helper(klass = nil)
-          return (@link_helper || TagLinker) if klass.nil?
-          @link_helper = klass
-        end
-      end
-
       class TagStat
         attr_accessor :pages
         attr_accessor :group
@@ -49,7 +38,7 @@ module Awestruct
         return if ( all.nil? || all.empty? )
 
         all.each do |page|
-          tags = page.send(self.class.page_accessor)
+          tags = page.tags
           if ( tags && ! tags.empty? )
             tags.each do |tag|
               tag = tag.to_s
@@ -60,8 +49,8 @@ module Awestruct
         end
 
         all.each do |page|
-          page.send("#{self.class.page_accessor}=", (page.send(self.class.page_accessor)||[]).collect{|t| @tags[t]})
-          page.extend( self.class.link_helper )
+          page.tags = (page.tags||[]).collect{|t| @tags[t]}
+          page.extend( TagLinker )
         end
 
         ordered_tags = @tags.values
