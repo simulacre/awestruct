@@ -46,6 +46,7 @@ module Awestruct
       end
 
       def initialize(prop_name, input_path, opts={})
+        raise ArgumentError.new("opts[:front_matter] (Argument 2) may not contain a key (:#{prop_name}) that is the same as prop_name (Argument 0)") if opts[:front_matter].keys.include?(prop_name)
         @prop_name    = prop_name
         @input_path   = input_path
         @per_page     = opts[:per_page] || 20
