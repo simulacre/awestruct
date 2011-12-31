@@ -9,6 +9,7 @@ module Awestruct
     def initialize(site, source_path, relative_source_path, options = {})
       super( site, source_path, relative_source_path, options )
       @raw_page_content = ''
+      @header_line_cnt  = 1
       load_page
     end
 
@@ -17,39 +18,30 @@ module Awestruct
     def load_page
       full_content = File.read( source_path )
       full_content.force_encoding(@site.encoding) if @site.encoding
-      yaml_content = ''
+      yaml_content      = []
+      @raw_page_content = []
 
-      dash_lines = 0
-      mode = :yaml
-      lnum = 1
+      begin
+        lines = full_content.each_line
+        if lines.peek.strip == '---'
+          lines.next
+          yaml_content << lines.next while lines.peek.strip != '---'
+          lines.next
+          @header_line_cnt = yaml_content.count + 3
+          yaml_content = yaml_content
+        end # line.peek.strip == '---'
+        @raw_page_content << lines.next while true
 
-      full_content.each_line do |line|
-        begin
-          if ( line.strip == '---' )
-            dash_lines = dash_lines +1
-          end
-          if ( mode == :yaml )
-            yaml_content << line
-          else
-            @raw_page_content << line
-          end
-          if ( dash_lines == 2 )
-            mode = :page
-          end
-          lnum += 1
-        rescue Exception => e
-          e.set_backtrace(e.backtrace.unshift("#{source_path}:#{lnum}"))
-          raise e
-        end
-      end
-
-      if ( dash_lines == 0 )
-        @raw_page_content = yaml_content
-        yaml_content = ''
+      rescue StopIteration # we're done
+      rescue Exception => e
+        e.set_backtrace(e.backtrace.unshift("#{source_path}:#{@header_line_cnt + @raw_page_content.count}"))
+        raise e
+      ensure
+        @raw_page_content = @raw_page_content.join
       end
 
       begin
-        @front_matter = YAML.load( yaml_content ) || {}
+        @front_matter = YAML.load( yaml_content.join ) || {}
         @front_matter.each do |k,v|
           self.send( "#{k}=", v )
         end
