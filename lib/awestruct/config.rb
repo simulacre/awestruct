@@ -20,7 +20,9 @@ module Awestruct
       @extension_dir  = File.join(dir, '_ext')
       @skin_dir       = File.join(dir, '_skin')
       @tmp_dir        = File.join(dir, '_tmp')
-      @ignore         = File.exists?(ignore_file = File.join(dir, ".awestruct_ignore")) ? IO.read(ignore_file).split("\n").map(&:strip) : []
+      @ignore         = File.exists?(ignore_file = File.join(dir, ".awestruct_ignore")) ? IO.read(ignore_file).each_line.map(&:strip) : []
+      prefix_sub      = /^#{Dir.pwd}/
+      @ignore         = Dir[*@ignore].map{|p| p.gsub(prefix_sub,"") }
     end
 
   end
