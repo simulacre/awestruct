@@ -5,7 +5,7 @@ module Awestruct
       rendered = ''
       begin
         options = (site.haml || {}).inject({}){|h,(k,v)| h[k.to_sym] = v.to_sym; h }
-        options[:filename] = ".#{relative_source_path}"
+        options[:filename] = relative_source_path ? ".#{relative_source_path}" : source_path
         options[:line] = (@header_line_cnt || 1)
         haml_engine = Haml::Engine.new( raw_page_content, options)
         rendered = haml_engine.render( context )
@@ -19,6 +19,7 @@ module Awestruct
         end
         puts e
         puts e.backtrace
+        puts raw_page_content.inspect
       end
       rendered
     end
