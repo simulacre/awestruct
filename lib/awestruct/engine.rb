@@ -8,15 +8,9 @@ require 'hashery/opencascade'
 
 require 'awestruct/config'
 require 'awestruct/site'
-require 'awestruct/haml_file'
-require 'awestruct/erb_file'
-require 'awestruct/textile_file'
-require 'awestruct/markdown_file'
-require 'awestruct/sass_file'
-require 'awestruct/scss_file'
-require 'awestruct/org_mode_file'
+require "awestruct/front_matter_file"
 require 'awestruct/verbatim_file'
-
+require 'awestruct/ext/tilt/org_mode'
 require 'awestruct/context_helper'
 
 require 'awestruct/extensions/pipeline'
@@ -92,33 +86,9 @@ module Awestruct
     end
 
     def load_page(path, options = {})
-      page = nil
-      if ( options[:relative_path].nil? )
-        #dir_pathname = Pathname.new( dir )
-        #path_name = Pathname.new( path )
-        #relative_path = path_name.relative_path_from( dir_pathname ).to_s
-      end
-
       fixed_relative_path = ( options[:relative_path].nil? ? nil : File.join( '', options[:relative_path] ) )
-
-      if ( path =~ /\.haml$/ )
-        page = HamlFile.new( site, path, fixed_relative_path, options )
-      elsif ( path =~ /\.erb$/ )
-        page = ErbFile.new( site, path, fixed_relative_path, options )
-      elsif ( path =~ /\.textile$/ )
-        page = TextileFile.new( site, path, fixed_relative_path, options )
-      elsif ( path =~ /\.md$/ )
-        page = MarkdownFile.new( site, path, fixed_relative_path, options )
-      elsif ( path =~ /\.sass$/ )
-        page = SassFile.new( site, path, fixed_relative_path, options )
-      elsif ( path =~ /\.scss$/ )
-        page = ScssFile.new( site, path, fixed_relative_path, options )
-      elsif ( path =~ /\.org$/ )
-        page = OrgModeFile.new( site, path, fixed_relative_path, options )
-      elsif ( File.file?( path ) )
-        page = VerbatimFile.new( site, path, fixed_relative_path, options )
-      end
-      page
+      FrontMatterFile.load(site, path, fixed_relative_path, options) ||
+        (File.file?(path) ? VerbatimFile.new(site, path, fixed_relative_path) : nil)
     end
 
     def create_context(page, content='')
@@ -361,14 +331,12 @@ module Awestruct
           Find.prune
           next
         end
-        file_pathname = Pathname.new( path )
-        relative_path = file_pathname.relative_path_from( dir_pathname ).to_s
+        relative_path = Pathname.new(path).relative_path_from( dir_pathname ).to_s
         if config.ignore.include?(relative_path)
           Find.prune
           next
         end
-        page = load_page( path, :relative_path => relative_path )
-        if ( page )
+        if ( page = load_page( path, :relative_path => relative_path ) )
           inherit_front_matter( page )
           visited_pages[ path ] = page
         end
