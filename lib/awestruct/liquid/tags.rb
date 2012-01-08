@@ -1,10 +1,10 @@
 require "awestruct/liquid/gist-tag"
 # not yet compatible - requires pygments (pygments.rb)
-# require "octopress/plugins/backtick_code_block"
-# require "octopress/plugins/code_block"
+require "octopress/plugins/backtick_code_block"
+require "octopress/plugins/code_block"
 require "octopress/plugins/blockquote"
 require "octopress/plugins/image_tag"
-# not yet compatible
+# not yet compatible - looks for code_dir under context.registers[:site]
 # require "octopress/plugins/include_code"
 require "octopress/plugins/jsfiddle"
 require "octopress/plugins/pullquote"
