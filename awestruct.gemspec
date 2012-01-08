@@ -16,7 +16,9 @@ Gem::Specification.new do |s|
     s.add_dependency 'haml', '<= 3.1.0'
     s.add_dependency 'sass', '<= 3.1.0'
     s.add_dependency 'redcarpet'
+    s.add_dependency 'liquid'
     s.add_dependency 'org-ruby', '= 0.5.3'
+
     s.add_dependency 'hpricot'
     s.add_dependency 'hashery', '= 1.4.0'
     s.add_dependency 'compass', '>= 0.11.5'

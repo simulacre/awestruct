@@ -1,5 +1,7 @@
 require "tilt"
 Dir[File.expand_path('../front_matter_file/**/*', __FILE__)].each { |lib| require lib }
+require "liquid"
+require "awestruct/liquid/tags"
 
 module Awestruct
   class FrontMatterFile < OpenStruct
@@ -8,6 +10,9 @@ module Awestruct
     attr_reader :front_matter
 
     class << self
+      # Load a new front_matter file for the site from a source path if a suitable
+      # template parser for the source path is found.
+      # @return [FrontMatterFile, nil] nil if a suitable parse is not found.
       def load(site, source_path, relative_source_path, options = {})
         return nil unless Tilt[source_path]
         new(site, source_path, relative_source_path, options = {})
@@ -21,6 +26,9 @@ module Awestruct
       end
     end # class << self
 
+    # Load a front_matter file with a suitable template parser.
+    # If the file is not a Liquid template it will be preproccessed by a Liquid
+    # template parser, so all templates can include Liquid tags.
     def initialize(site, source_path, relative_source_path, options = {})
       super({})
       @raw_page_content     = ''
@@ -34,8 +42,9 @@ module Awestruct
         @template_type  = template.class.to_s.split('Tilt::',2)[-1]
         (mixin = self.class.s_to_class(@template_type)) && extend(mixin)
         template.options.merge!(opts.merge(user_rules))
-        @raw_page_content
-      end # template
+        # preprocess any Liquid tags, e.g., {% gist 12345 %}
+        template.class.is_a?(Tilt::LiquidTemplate) ?  @raw_page_content : (Tilt.new("#{source_path}.liquid", @content_start_line){ @raw_page_content }.render)
+      end
       unless ( relative_source_path.nil? )
         dir_name         = File.dirname( relative_source_path )
         self.output_path = dir_name == "." ? output_filename : File.join( dir_name, output_filename )
@@ -50,8 +59,11 @@ module Awestruct
       render(site.engine.create_context(self))
     end
 
+
+    # Converts the front_matter filename to an output filename with the correct extension.
+    # I'm surprised that this isn't provided by Tilt.
+    # @todo use Tilt.mappings to correctly set filename extension for templates that aren't sass, less, markdown, or haml
     def output_filename
-      # @todo use Tilt.mappings
       case @template
       when Tilt::HamlTemplate
         File.basename(self.source_path, '.haml')
