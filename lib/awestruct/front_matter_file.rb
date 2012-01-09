@@ -15,8 +15,10 @@ module Awestruct
       # template parser for the source path is found.
       # @return [FrontMatterFile, nil] nil if a suitable parse is not found.
       def load(site, source_path, relative_source_path, options = {})
+        @cache ||= {}
+        return @cache[source_path] if @cache[source_path]
         return nil unless Tilt[source_path]
-        new(site, source_path, relative_source_path, options = {})
+        return @cache[source_path] = new(site, source_path, relative_source_path, options = {})
       end
 
       def s_to_class(s, start = self)
