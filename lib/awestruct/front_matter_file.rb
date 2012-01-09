@@ -2,6 +2,7 @@ require "tilt"
 Dir[File.expand_path('../front_matter_file/**/*', __FILE__)].each { |lib| require lib }
 require "liquid"
 require "awestruct/liquid/tags"
+require "awestruct/filter"
 
 module Awestruct
   class FrontMatterFile < OpenStruct
@@ -52,9 +53,10 @@ module Awestruct
       def filters(template_type = nil)
         @filters ||= { :any => [], :not => {} }
         return @filters if template_type.nil?
+        nots = @filters[:not].select{ |k,fs| k == template_type }.values.flatten
         ((@filters[template_type] ||= []) |
           @filters[:any] |
-          @filters[:not].select{|k,fs| k != template_type }.values).flatten
+          @filters[:not].select{|k,fs| k != template_type }.values).flatten.reject{|f| nots.include?(f) }
       end # filters(template_type)
 
       def pre_filters(template_type)
@@ -93,7 +95,6 @@ module Awestruct
       # while pre_render filters process @content needs to be available # after that it's
       # not available until #content is called again, triggering the post_render filters
       # code smell!
-      #@parsed_content, @content = @content, nil
       @content = nil
 
       unless ( relative_source_path.nil? )
@@ -137,10 +138,10 @@ module Awestruct
 
 
 
-    pre_filter do |page|
-      page.extend BacktickCodeBlock
-      page.render_code_block(page.content)
-    end
+    # pre_filter do |page|
+    #   page.extend BacktickCodeBlock
+    #   page.render_code_block(page.content)
+    # end
 
     pre_filter(:not => Tilt::LiquidTemplate) do |page|
       Tilt.new("#{page.source_path}.liquid", page.content_start_line){ page.content }.render
@@ -210,5 +211,7 @@ module Awestruct
     def user_rules
       site.send( @template_type.split("::")[-1].downcase.split("template")[0] + "_rules" ) || {}
     end
-  end
+  end # class::FrontMatterFile < OpenStruct
+
+  FrontMatterFile.filter Filter::SyntaxHighlight, :not =>  [Tilt::ScssTemplate, Tilt::SassTemplate, Tilt::LessTemplate]
 end
