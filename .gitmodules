@@ -1,3 +1,0 @@
-[submodule "lib/octopress"]
-	path = lib/octopress
-	url = git://github.com/simulacre/octopress.git
