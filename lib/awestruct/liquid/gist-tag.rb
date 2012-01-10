@@ -3,7 +3,7 @@
 #
 # Example usage: {% gist 1027674 gist_tag.rb %} //embeds a gist for this plugin
 
-require "octopress/plugins/gist_tag"
+require "octopress/gist_tag"
 
 module Awestruct
   class GistTag < ::Jekyll::GistTag

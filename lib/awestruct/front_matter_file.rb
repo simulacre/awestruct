@@ -1,8 +1,13 @@
 require "tilt"
 Dir[File.expand_path('../front_matter_file/**/*', __FILE__)].each { |lib| require lib }
-require "liquid"
-require "awestruct/liquid/tags"
 require "awestruct/filter"
+require "liquid"
+
+begin
+  require "awestruct/liquid/tags"
+rescue LoadError => e
+  warn "Unable to load custom liquid tags dependency; gist tag, etc., will not be parsed:\n #{e}"
+end
 
 module Awestruct
   class FrontMatterFile < OpenStruct
@@ -217,5 +222,6 @@ module Awestruct
     end
   end # class::FrontMatterFile < OpenStruct
 
-  FrontMatterFile.filter Filter::SyntaxHighlight, :not =>  [Tilt::ScssTemplate, Tilt::SassTemplate, Tilt::LessTemplate]
+  defined?(Filter::SyntaxHighlight) &&
+    FrontMatterFile.filter(Filter::SyntaxHighlight, :not =>  [Tilt::ScssTemplate, Tilt::SassTemplate, Tilt::LessTemplate])
 end
