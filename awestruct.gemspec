@@ -20,7 +20,6 @@ Gem::Specification.new do |s|
     s.add_dependency 'pygments.rb'
     s.add_dependency 'org-ruby', '= 0.5.3'
 
-    s.add_dependency 'hpricot'
     s.add_dependency 'nokogiri'
 
     s.add_dependency 'hashery', '= 1.4.0'
