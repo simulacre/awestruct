@@ -19,7 +19,7 @@ begin
           doc.children.each do |root|
             root.xpath(".//code").each do |code|
               # if we've already processed this code block then it's grandparent will be <td class="code">
-              next if code.parent && code.parent.parent && code.parent.parent['class'] == 'code'
+              next if code['class'] == 'gist' || (code.parent && code.parent.parent && code.parent.parent['class'] == 'code')
 
               code.parent.before("<noscript>#{code.text}</noscript>")
 
